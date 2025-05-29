@@ -1,4 +1,7 @@
-from alpaca_trade_api.rest import REST, TimeFrame
+from alpaca.data.historical import StockHistoricalDataClient
+from alpaca.data.timeframe import TimeFrame
+from alpaca.data.requests import StockBarsRequest
+from datetime import datetime
 from dotenv import load_dotenv
 import os
 import pandas as pd
@@ -7,12 +10,20 @@ import pandas as pd
 load_dotenv()
 
 # Get keys from environment
-API_KEY = os.getenv("ALPACA_API_KEY")
-API_SECRET = os.getenv("ALPACA_SECRET_KEY")
-BASE_URL = "https://paper-api.alpaca.markets"
+client = StockHistoricalDataClient(os.getenv("ALPACA_API_KEY"), os.getenv("ALPACA_SECRET_KEY"))
 
-api = REST(API_KEY, API_SECRET, BASE_URL)
+#Request historical data
+request_params = StockBarsRequest(
+    symbol_or_symbols="AAPL",
+    timeframe=TimeFrame.Day,
+    start=datetime(2025, 5, 19),
+    end=datetime(2025, 5, 23),
+    limit=100
+)
 
 # Fetch historical data
-bars = api.get_bars("AAPL", TimeFrame.Day, limit=100).df
-print(bars.head())
+bars = client.get_stock_bars(request_params).df
+
+# Convert to DataFrame
+df = pd.DataFrame(bars)
+print(df.head())
